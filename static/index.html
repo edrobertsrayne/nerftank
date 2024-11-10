@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Robot Remote Control</title>
+    <script src="/static/joy.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f3f4f6;
+      }
+      .container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 340px;
+        box-sizing: border-box;
+      }
+      .controls-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .controls-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .label {
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .joypad {
+        width: 200px;
+        height: 200px;
+      }
+      .btn {
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .btn:hover {
+        background-color: #2563eb;
+      }
+      .btn-stop {
+        background-color: #ef4444;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .btn-stop:hover {
+        background-color: #dc2626;
+      }
+      .btn-recentre {
+        font-size: 24px;
+      }
+      .toggle-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #4ade80;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .toggle-label {
+        font-size: 14px;
+      }
+      .fire-control {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .fire-btn {
+        width: 100px;
+        height: 50px;
+        border: none;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .arm-btn {
+        background-color: #22c55e;
+        color: white;
+      }
+      .arm-btn.armed {
+        background-color: #ef4444;
+      }
+      .fire-btn.fire {
+        background-color: #dc2626;
+        color: white;
+      }
+      .fire-btn.fire:disabled {
+        background-color: #6b7280;
+        cursor: not-allowed;
+      }
+
+      @media (min-width: 768px) and (orientation: landscape) {
+        .container {
+          max-width: 900px;
+        }
+        .controls-wrapper {
+          flex-direction: row;
+          justify-content: space-around;
+        }
+        .controls-section {
+          width: 30%;
+        }
+        .fire-control {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="controls-wrapper">
+        <div class="controls-section">
+          <div class="label">Drive Controls</div>
+          <div class="controls">
+            <div class="joypad" id="drive"></div>
+            <div class="toggle-container">
+              <span class="toggle-label">Manual</span>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="slider"></span>
+              </label>
+              <span class="toggle-label">Auto</span>
+            </div>
+          </div>
+        </div>
+        <div class="controls-section">
+          <div class="label">Fire Control</div>
+          <div class="fire-control">
+            <button class="fire-btn arm-btn">DISARMED</button>
+            <button class="fire-btn fire" disabled>FIRE</button>
+          </div>
+        </div>
+        <div class="controls-section">
+          <div class="label">Turret Controls</div>
+          <div class="controls">
+            <div class="joypad" id="turret"></div>
+            <div class="toggle-container">
+              <span class="toggle-label">Manual</span>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="slider"></span>
+              </label>
+              <span class="toggle-label">Auto</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const socket = new WebSocket(`ws://${window.location.host}/ws`);
+
+      // Listen for messages from the server
+      socket.addEventListener("message", (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log("Received:", data);
+
+          // Handle different response types
+          switch (data.type) {
+            case "response":
+              // handleResponse(data);
+              break;
+            case "error":
+              console.error("Server error:", data.message);
+              break;
+          }
+        } catch (e) {
+          console.error("Error parsing message:", e);
+        }
+      });
+
+      // Handle connection errors
+      socket.addEventListener("error", (event) => {
+        console.error("WebSocket error:", event);
+      });
+
+      // Handle connection close
+      socket.addEventListener("close", (event) => {
+        console.log("Disconnected from server");
+      });
+      const armButton = document.querySelector(".arm-btn");
+      const fireButton = document.querySelector(".fire-btn.fire");
+
+      armButton.addEventListener("click", function () {
+        this.classList.toggle("armed");
+        if (this.classList.contains("armed")) {
+          this.textContent = "ARMING";
+          fireButton.disabled = true;
+        } else {
+          this.textContent = "DISARMED";
+          fireButton.disabled = true;
+        }
+      });
+
+      var driveContoller = new JoyStick("drive");
+      var turretContoller = new JoyStick("turret");
+
+      // every 50ms update the controller values and send via websocket
+      setInterval(function () {
+        const stickData = {
+          type: "stick_data",
+          drive: {
+            x: driveContoller.GetX(),
+            y: driveContoller.GetY(),
+            direction: driveContoller.GetDir(),
+          },
+          turret: {
+            x: turretContoller.GetX(),
+            y: turretContoller.GetY(),
+            direction: turretContoller.GetDir(),
+          },
+        };
+
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify(stickData));
+        } else {
+          console.error("WebSocket not connected");
+        }
+      }, 50);
+    </script>
+  </body>
+</html>
