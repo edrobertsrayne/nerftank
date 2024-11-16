@@ -1,9 +1,14 @@
 from microdot import Microdot, send_file
 from microdot.websocket import with_websocket
+from robot import Robot
 import asyncio
 import json
 
 app = Microdot()
+robot = Robot(
+    left_motor_pins=[(25, 33, 32), (25, 33, 26)],
+    right_motor_pins=[(16, 17, 15), (16, 17, 5)],
+)
 
 
 @app.route("/")
@@ -26,10 +31,10 @@ async def websocket(_, ws):
         data = await ws.receive()
         try:
             message = json.loads(data)
+            if message["type"] == "stick_data":
+                robot.update(message["data"])
         except json.JSONDecodeError:
-            message = data
-        print(message)
-        # await ws.send(json.dumps(message))
+            print("Invalid JSON:", data)
 
 
 async def main():

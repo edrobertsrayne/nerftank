@@ -267,15 +267,17 @@
       setInterval(function () {
         const stickData = {
           type: "stick_data",
-          drive: {
-            x: driveContoller.GetX(),
-            y: driveContoller.GetY(),
-            direction: driveContoller.GetDir(),
-          },
-          turret: {
-            x: turretContoller.GetX(),
-            y: turretContoller.GetY(),
-            direction: turretContoller.GetDir(),
+          data: {
+            drive: {
+              x: driveContoller.GetX(),
+              y: driveContoller.GetY(),
+              direction: driveContoller.GetDir(),
+            },
+            turret: {
+              x: turretContoller.GetX(),
+              y: turretContoller.GetY(),
+              direction: turretContoller.GetDir(),
+            },
           },
         };
 

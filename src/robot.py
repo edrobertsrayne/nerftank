@@ -28,6 +28,9 @@ class Robot:
         """
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
+    def update(self, data: dict):
+        print(data)
+
     def drive(self, speed: float, turn: float):
         """
         Drive the robot.
