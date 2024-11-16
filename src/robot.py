@@ -13,7 +13,7 @@ class Robot:
         self.right_motors = [Motor(pin[0], pin[1], pin[2]) for pin in right_motor_pins]
 
     @staticmethod
-    def _map(
+    def map(
         x: float, in_min: float, in_max: float, out_min: float, out_max: float
     ) -> float:
         """
@@ -30,17 +30,61 @@ class Robot:
             float(x - in_min) * (out_max - out_min) / float(in_max - in_min) + out_min
         )
 
+    @staticmethod
+    def _apply_deadzone(value, deadzone, max_value=100):
+        """Helper method to handle deadzone and rescaling"""
+        if abs(value) < deadzone:
+            return 0
+
+        sign = 1 if value > 0 else -1
+        # Rescale the remaining range using max_value
+        scaled = (abs(value) - deadzone) * max_value / (max_value - deadzone)
+        return sign * max(0, min(max_value, scaled))
+
+    @staticmethod
+    def ramp_cubic(value, deadzone=0, max_value=100):
+        if abs(value) < deadzone:
+            return 0
+        # Apply deadzone and rescale
+        value = Robot._apply_deadzone(value, deadzone, max_value)
+        # Apply cubic function
+        normalized = value / max_value
+        ramped = normalized * normalized * normalized
+        return int(ramped * max_value)
+
+    @staticmethod
+    def ramp_quadratic(value, deadzone=0, max_value=100):
+        if abs(value) < deadzone:
+            return 0
+        # Apply deadzone and rescale
+        value = Robot._apply_deadzone(value, deadzone, max_value)
+        # Apply quadratic function
+        sign = 1 if value >= 0 else -1
+        normalized = abs(value) / max_value
+        ramped = normalized * normalized
+        return int(sign * ramped * max_value)
+
+    @staticmethod
+    def ramp_exponential(value, deadzone=0, exponent=1.5, max_value=100):
+        if abs(value) < deadzone:
+            return 0
+        # Apply deadzone and rescale
+        value = Robot._apply_deadzone(value, deadzone, max_value)
+        # Apply exponential function
+        sign = 1 if value >= 0 else -1
+        normalized = abs(value) / max_value
+        ramped = pow(normalized, exponent)
+        return int(sign * ramped * max_value)
+
     def update(self, data: dict):
         speed = float(data["drive"]["y"])
         turn = float(data["drive"]["x"])
         pan = float(data["turret"]["x"])
         tilt = float(data["turret"]["y"])
 
-        # apply dead zones to joypad data
-        if abs(speed) < 10:
-            speed = 0
-        if abs(turn) < 10:
-            turn = 0
+        # apply a ramp function with a small deadzone
+        speed = self.ramp_cubic(speed, deadzone=10)
+        turn = self.ramp_cubic(turn, deadzone=10)
 
         self.drive(speed, turn)
 
@@ -51,8 +95,8 @@ class Robot:
         :param speed: Speed of the robot (-100 to 100)
         :param turn: Turn of the robot (-100 to 100)
         """
-        speed = self._map(speed, -100, 100, -1023, 1023)
-        turn = self._map(turn, -100, 100, -511, 511)
+        speed = self.map(speed, -100, 100, -1023, 1023)
+        turn = self.map(turn, -100, 100, -511, 511)
 
         left_speed = speed + turn
         right_speed = speed - turn
