@@ -6,8 +6,8 @@ import json
 
 app = Microdot()
 robot = Robot(
-    left_motor_pins=[(25, 33, 32), (25, 33, 26)],
-    right_motor_pins=[(16, 17, 15), (16, 17, 5)],
+    right_motor_pins=[(33, 25, 32), (33, 25, 26)],
+    left_motor_pins=[(16, 17, 15), (16, 17, 5)],
 )
 
 
@@ -29,12 +29,10 @@ def static(_, path):
 async def websocket(_, ws):
     while True:
         data = await ws.receive()
-        try:
-            message = json.loads(data)
-            if message["type"] == "stick_data":
-                robot.update(message["data"])
-        except json.JSONDecodeError:
-            print("Invalid JSON:", data)
+        message = json.loads(data)
+        if message["type"] == "stick_data":
+            # print(message["data"])
+            robot.update(message["data"])
 
 
 async def main():

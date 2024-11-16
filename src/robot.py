@@ -26,10 +26,23 @@ class Robot:
         :param out_max: Maximum value of the output range
         :return: Mapped value
         """
-        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+        return (
+            float(x - in_min) * (out_max - out_min) / float(in_max - in_min) + out_min
+        )
 
     def update(self, data: dict):
-        print(data)
+        speed = float(data["drive"]["y"])
+        turn = float(data["drive"]["x"])
+        pan = float(data["turret"]["x"])
+        tilt = float(data["turret"]["y"])
+
+        # apply dead zones to joypad data
+        if abs(speed) < 10:
+            speed = 0
+        if abs(turn) < 10:
+            turn = 0
+
+        self.drive(speed, turn)
 
     def drive(self, speed: float, turn: float):
         """
@@ -41,8 +54,8 @@ class Robot:
         speed = self._map(speed, -100, 100, -1023, 1023)
         turn = self._map(turn, -100, 100, -511, 511)
 
-        left_speed = speed - turn
-        right_speed = speed + turn
+        left_speed = speed + turn
+        right_speed = speed - turn
 
         for motor in self.left_motors:
             if left_speed > 0:
