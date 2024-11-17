@@ -2,6 +2,9 @@ from tb6612fng import Motor
 
 
 class Robot:
+
+    max_value = 150
+
     def __init__(self, left_motor_pins: list, right_motor_pins: list):
         """
         Initialize the robot with left and right motor pins.
@@ -31,74 +34,75 @@ class Robot:
         )
 
     @staticmethod
-    def _apply_deadzone(value, deadzone, max_value=100):
+    def _apply_deadzone(value, deadzone):
         """Helper method to handle deadzone and rescaling"""
         if abs(value) < deadzone:
             return 0
 
         sign = 1 if value > 0 else -1
         # Rescale the remaining range using max_value
-        scaled = (abs(value) - deadzone) * max_value / (max_value - deadzone)
-        return sign * max(0, min(max_value, scaled))
+        scaled = (
+            (abs(value) - deadzone) * Robot.max_value / (Robot.max_value - deadzone)
+        )
+        return sign * max(0, min(Robot.max_value, scaled))
 
     @staticmethod
-    def ramp_cubic(value, deadzone=0, max_value=100):
+    def ramp_cubic(value, deadzone=0):
         if abs(value) < deadzone:
             return 0
         # Apply deadzone and rescale
-        value = Robot._apply_deadzone(value, deadzone, max_value)
+        value = Robot._apply_deadzone(value, deadzone)
         # Apply cubic function
-        normalized = value / max_value
+        normalized = value / Robot.max_value
         ramped = normalized * normalized * normalized
-        return int(ramped * max_value)
+        return int(ramped * Robot.max_value)
 
     @staticmethod
-    def ramp_quadratic(value, deadzone=0, max_value=100):
+    def ramp_quadratic(value, deadzone=0):
         if abs(value) < deadzone:
             return 0
         # Apply deadzone and rescale
-        value = Robot._apply_deadzone(value, deadzone, max_value)
+        value = Robot._apply_deadzone(value, deadzone)
         # Apply quadratic function
         sign = 1 if value >= 0 else -1
-        normalized = abs(value) / max_value
+        normalized = abs(value) / Robot.max_value
         ramped = normalized * normalized
-        return int(sign * ramped * max_value)
+        return int(sign * ramped * Robot.max_value)
 
     @staticmethod
-    def ramp_exponential(value, deadzone=0, exponent=1.5, max_value=100):
+    def ramp_exponential(value, deadzone=0, exponent=1.5):
         if abs(value) < deadzone:
             return 0
         # Apply deadzone and rescale
-        value = Robot._apply_deadzone(value, deadzone, max_value)
+        value = Robot._apply_deadzone(value, deadzone)
         # Apply exponential function
         sign = 1 if value >= 0 else -1
-        normalized = abs(value) / max_value
+        normalized = abs(value) / Robot.max_value
         ramped = pow(normalized, exponent)
-        return int(sign * ramped * max_value)
+        return int(sign * ramped * Robot.max_value)
 
     def update(self, data: dict):
-        max_value = 150
-
         speed = float(data["drive"]["y"])
         turn = float(data["drive"]["x"])
         pan = float(data["turret"]["x"])
         tilt = float(data["turret"]["y"])
 
         # apply a ramp function with a small deadzone
-        speed = self.ramp_cubic(speed, deadzone=10, max_value=max_value)
-        turn = self.ramp_cubic(turn, deadzone=10, max_value=max_value)
+        speed = self.ramp_cubic(speed, deadzone=10)
+        turn = self.ramp_cubic(turn, deadzone=10)
 
-        self.drive(speed, turn, max_value)
+        self.drive(speed, turn)
+        self.turret.update(pan, tilt)
 
-    def drive(self, speed: float, turn: float, max_value=100):
+    def drive(self, speed: float, turn: float):
         """
         Drive the robot.
 
         :param speed: Speed of the robot (-100 to 100)
         :param turn: Turn of the robot (-100 to 100)
         """
-        speed = self.map(speed, -max_value, max_value, -1023, 1023)
-        turn = self.map(turn, -max_value, max_value, -511, 511)
+        speed = self.map(speed, -Robot.max_value, Robot.max_value, -1023, 1023)
+        turn = self.map(turn, -Robot.max_value, Robot.max_value, -511, 511)
 
         left_speed = speed + turn
         right_speed = speed - turn
