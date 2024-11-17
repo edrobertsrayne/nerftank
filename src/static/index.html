@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Robot Remote Control</title>
+    <!-- <script src="joy.js"></script> -->
     <script src="/static/joy.js"></script>
     <style>
       body {
@@ -46,8 +47,8 @@
         gap: 10px;
       }
       .joypad {
-        width: 200px;
-        height: 200px;
+        width: 300px;
+        height: 300px;
       }
       .btn {
         background-color: #3b82f6;
@@ -178,38 +179,19 @@
     <div class="container">
       <div class="controls-wrapper">
         <div class="controls-section">
-          <div class="label">Drive Controls</div>
           <div class="controls">
             <div class="joypad" id="drive"></div>
-            <div class="toggle-container">
-              <span class="toggle-label">Manual</span>
-              <label class="toggle-switch">
-                <input type="checkbox" />
-                <span class="slider"></span>
-              </label>
-              <span class="toggle-label">Auto</span>
-            </div>
           </div>
         </div>
         <div class="controls-section">
-          <div class="label">Fire Control</div>
           <div class="fire-control">
             <button class="fire-btn arm-btn">DISARMED</button>
             <button class="fire-btn fire" disabled>FIRE</button>
           </div>
         </div>
         <div class="controls-section">
-          <div class="label">Turret Controls</div>
           <div class="controls">
             <div class="joypad" id="turret"></div>
-            <div class="toggle-container">
-              <span class="toggle-label">Manual</span>
-              <label class="toggle-switch">
-                <input type="checkbox" />
-                <span class="slider"></span>
-              </label>
-              <span class="toggle-label">Auto</span>
-            </div>
           </div>
         </div>
       </div>

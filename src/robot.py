@@ -77,26 +77,28 @@ class Robot:
         return int(sign * ramped * max_value)
 
     def update(self, data: dict):
+        max_value = 150
+
         speed = float(data["drive"]["y"])
         turn = float(data["drive"]["x"])
         pan = float(data["turret"]["x"])
         tilt = float(data["turret"]["y"])
 
         # apply a ramp function with a small deadzone
-        speed = self.ramp_cubic(speed, deadzone=10)
-        turn = self.ramp_cubic(turn, deadzone=10)
+        speed = self.ramp_cubic(speed, deadzone=10, max_value=max_value)
+        turn = self.ramp_cubic(turn, deadzone=10, max_value=max_value)
 
-        self.drive(speed, turn)
+        self.drive(speed, turn, max_value)
 
-    def drive(self, speed: float, turn: float):
+    def drive(self, speed: float, turn: float, max_value=100):
         """
         Drive the robot.
 
         :param speed: Speed of the robot (-100 to 100)
         :param turn: Turn of the robot (-100 to 100)
         """
-        speed = self.map(speed, -100, 100, -1023, 1023)
-        turn = self.map(turn, -100, 100, -511, 511)
+        speed = self.map(speed, -max_value, max_value, -1023, 1023)
+        turn = self.map(turn, -max_value, max_value, -511, 511)
 
         left_speed = speed + turn
         right_speed = speed - turn
