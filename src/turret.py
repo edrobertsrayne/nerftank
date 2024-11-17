@@ -23,8 +23,8 @@ class Turret:
         self.trigger_servo.write_microseconds(TRIGGER_MAX)
 
     def move(self, pan, tilt):
-        pan = utils.map(pan, -Robot.max_value, Robot.max_value, PAN_MIN, PAN_MAX)
-        tilt = utils.map(tilt, -Robot.max_value, Robot.max_value, TILT_MIN, TILT_MAX)
+        pan = utils.map(pan, -Robot.MAX_VALUE, Robot.MAX_VALUE, PAN_MIN, PAN_MAX)
+        tilt = utils.map(tilt, -Robot.MAX_VALUE, Robot.MAX_VALUE, TILT_MIN, TILT_MAX)
 
         pan = self.pan_servo.write_microseconds(pan)
         tilt = self.tilt_servo.write_microseconds(tilt)
