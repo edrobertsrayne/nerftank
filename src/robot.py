@@ -1,4 +1,6 @@
 from tb6612fng import Motor
+from turret import Turret
+import utils
 
 
 class Robot:
@@ -15,23 +17,7 @@ class Robot:
         self.left_motors = [Motor(pin[0], pin[1], pin[2]) for pin in left_motor_pins]
         self.right_motors = [Motor(pin[0], pin[1], pin[2]) for pin in right_motor_pins]
 
-    @staticmethod
-    def map(
-        x: float, in_min: float, in_max: float, out_min: float, out_max: float
-    ) -> float:
-        """
-        Map a value from one range to another.
-
-        :param x: Value to map
-        :param in_min: Minimum value of the input range
-        :param in_max: Maximum value of the input range
-        :param out_min: Minimum value of the output range
-        :param out_max: Maximum value of the output range
-        :return: Mapped value
-        """
-        return (
-            float(x - in_min) * (out_max - out_min) / float(in_max - in_min) + out_min
-        )
+        self.turret = Turret(pan=19, tilt=18, trigger=23, fire=4)
 
     @staticmethod
     def _apply_deadzone(value, deadzone):
@@ -92,7 +78,7 @@ class Robot:
         turn = self.ramp_cubic(turn, deadzone=10)
 
         self.drive(speed, turn)
-        self.turret.update(pan, tilt)
+        self.turret.move(pan, tilt)
 
     def drive(self, speed: float, turn: float):
         """
@@ -101,8 +87,8 @@ class Robot:
         :param speed: Speed of the robot (-100 to 100)
         :param turn: Turn of the robot (-100 to 100)
         """
-        speed = self.map(speed, -Robot.max_value, Robot.max_value, -1023, 1023)
-        turn = self.map(turn, -Robot.max_value, Robot.max_value, -511, 511)
+        speed = utils.map(speed, -Robot.max_value, Robot.max_value, -1023, 1023)
+        turn = utils.map(turn, -Robot.max_value, Robot.max_value, -511, 511)
 
         left_speed = speed + turn
         right_speed = speed - turn
