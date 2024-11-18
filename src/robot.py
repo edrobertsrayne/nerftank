@@ -3,9 +3,9 @@ from turret import Turret
 import utils
 
 
-class Robot:
+class RobotController:
 
-    MAX_VALUE = 150
+    MAX_JOYSTICK_VALUE = 150
 
     def __init__(self, left_motor_pins: list, right_motor_pins: list):
         """
@@ -28,44 +28,46 @@ class Robot:
         sign = 1 if value > 0 else -1
         # Rescale the remaining range using max_value
         scaled = (
-            (abs(value) - deadzone) * Robot.MAX_VALUE / (Robot.MAX_VALUE - deadzone)
+            (abs(value) - deadzone)
+            * RobotController.MAX_JOYSTICK_VALUE
+            / (RobotController.MAX_JOYSTICK_VALUE - deadzone)
         )
-        return sign * max(0, min(Robot.MAX_VALUE, scaled))
+        return sign * max(0, min(RobotController.MAX_JOYSTICK_VALUE, scaled))
 
     @staticmethod
     def ramp_cubic(value, deadzone=0):
         if abs(value) < deadzone:
             return 0
         # Apply deadzone and rescale
-        value = Robot._apply_deadzone(value, deadzone)
+        value = RobotController._apply_deadzone(value, deadzone)
         # Apply cubic function
-        normalized = value / Robot.MAX_VALUE
+        normalized = value / RobotController.MAX_JOYSTICK_VALUE
         ramped = normalized * normalized * normalized
-        return int(ramped * Robot.MAX_VALUE)
+        return int(ramped * RobotController.MAX_JOYSTICK_VALUE)
 
     @staticmethod
     def ramp_quadratic(value, deadzone=0):
         if abs(value) < deadzone:
             return 0
         # Apply deadzone and rescale
-        value = Robot._apply_deadzone(value, deadzone)
+        value = RobotController._apply_deadzone(value, deadzone)
         # Apply quadratic function
         sign = 1 if value >= 0 else -1
-        normalized = abs(value) / Robot.MAX_VALUE
+        normalized = abs(value) / RobotController.MAX_JOYSTICK_VALUE
         ramped = normalized * normalized
-        return int(sign * ramped * Robot.MAX_VALUE)
+        return int(sign * ramped * RobotController.MAX_JOYSTICK_VALUE)
 
     @staticmethod
     def ramp_exponential(value, deadzone=0, exponent=1.5):
         if abs(value) < deadzone:
             return 0
         # Apply deadzone and rescale
-        value = Robot._apply_deadzone(value, deadzone)
+        value = RobotController._apply_deadzone(value, deadzone)
         # Apply exponential function
         sign = 1 if value >= 0 else -1
-        normalized = abs(value) / Robot.MAX_VALUE
+        normalized = abs(value) / RobotController.MAX_JOYSTICK_VALUE
         ramped = pow(normalized, exponent)
-        return int(sign * ramped * Robot.MAX_VALUE)
+        return int(sign * ramped * RobotController.MAX_JOYSTICK_VALUE)
 
     def update(self, data: dict):
         speed = float(data["drive"]["y"])
@@ -87,8 +89,20 @@ class Robot:
         :param speed: Speed of the robot (-100 to 100)
         :param turn: Turn of the robot (-100 to 100)
         """
-        speed = utils.map(speed, -Robot.MAX_VALUE, Robot.MAX_VALUE, -1023, 1023)
-        turn = utils.map(turn, -Robot.MAX_VALUE, Robot.MAX_VALUE, -511, 511)
+        speed = utils.map(
+            speed,
+            -RobotController.MAX_JOYSTICK_VALUE,
+            RobotController.MAX_JOYSTICK_VALUE,
+            -1023,
+            1023,
+        )
+        turn = utils.map(
+            turn,
+            -RobotController.MAX_JOYSTICK_VALUE,
+            RobotController.MAX_JOYSTICK_VALUE,
+            -511,
+            511,
+        )
 
         left_speed = speed + turn
         right_speed = speed - turn

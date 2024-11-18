@@ -1,11 +1,11 @@
 from microdot import Microdot, send_file
 from microdot.websocket import with_websocket
-from robot import Robot
+from robot import RobotController
 import asyncio
 import json
 
 app = Microdot()
-robot = Robot(
+robot = RobotController(
     right_motor_pins=[(33, 25, 32), (33, 25, 26)],
     left_motor_pins=[(16, 17, 15), (16, 17, 5)],
 )
