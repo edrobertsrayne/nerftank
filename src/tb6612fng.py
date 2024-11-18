@@ -3,86 +3,94 @@ TB6612FNG Single Motor Control Class for MicroPython
 """
 
 from machine import Pin, PWM
+from typing import Optional
 
 
 class Motor:
-    def __init__(self, in1, in2, pwm, stby=None, offset=0):
+    PWM_MAX = 65535
+    SPEED_MAX = 1023
+
+    def __init__(
+        self,
+        in1: int,
+        in2: int,
+        pwm: int,
+        stby: Optional[int] = None,
+        offset: float = 0.0,
+    ) -> None:
         """
-        Initialize a single motor
+        Initialize a single motor.
 
         Args:
-            in1 (Pin): First input pin
-            in2 (Pin): Second input pin
-            pwm (Pin): PWM control pin
-            stby (Pin): Standby pin (can be shared between multiple motors)
-            offset (float): Speed offset for motor calibration (0-1)
+            in1: First input pin number
+            in2: Second input pin number
+            pwm: PWM control pin number
+            stby: Standby pin number (can be shared between multiple motors)
+            offset: Speed offset for motor calibration (0-1)
         """
         self.in1 = Pin(in1, Pin.OUT)
         self.in2 = Pin(in2, Pin.OUT)
         self.pwm = PWM(Pin(pwm, Pin.OUT))
         self.stby = Pin(stby, Pin.OUT) if stby else None
         self.offset = offset
+        self.stop()  # Ensure motor starts in stopped state
 
-        # Ensure motor starts in stopped state
-        self.stop()
-
-    @staticmethod
-    def _constain(value, min_value, max_value):
-        if value < min_value:
-            return min_value
-        if value > max_value:
-            return max_value
-        return value
-
-    @staticmethod
-    def _map(
-        x: float, in_min: float, in_max: float, out_min: float, out_max: float
-    ) -> float:
-        return (
-            float(x - in_min) * (out_max - out_min) / float(in_max - in_min) + out_min
-        )
-
-    def forward(self, speed):
+    def _set_speed(self, speed: float) -> int:
         """
-        Run motor forward at specified speed
+        Convert and constrain speed value.
 
         Args:
-            speed (float): Motor speed from 0 to 1023
-        """
-        speed = self._constain(speed, 0, 1023)
-        speed = self._map(speed, 0, 1023, 0, 65535)
-        self.in1.value(1)
-        self.in2.value(0)
-        self.pwm.duty_u16(int(speed * (1 - self.offset)))
-        self.stby.value(1) if self.stby else None
+            speed: Raw speed value (0-1023)
 
-    def reverse(self, speed):
+        Returns:
+            Adjusted PWM duty cycle value
         """
-        Run motor in reverse at specified speed
+        speed = max(0, min(self.SPEED_MAX, speed))  # Constrain speed
+        # Map speed from 0-1023 to 0-65535
+        return int((speed / self.SPEED_MAX) * self.PWM_MAX * (1 - self.offset))
+
+    def _set_direction(self, forward: bool, speed: float) -> None:
+        """
+        Set motor direction and speed.
 
         Args:
-            speed (float): Motor speed from 0 to 1023
+            forward: True for forward, False for reverse
+            speed: Motor speed (0-1023)
         """
-        speed = self._constain(speed, 0, 1023)
-        speed = self._map(speed, 0, 1023, 0, 65535)
-        self.in1.value(0)
-        self.in2.value(1)
-        self.pwm.duty_u16(int(speed * (1 - self.offset)))
-        self.stby.value(1) if self.stby else None
+        self.in1.value(forward)
+        self.in2.value(not forward)
+        self.pwm.duty_u16(self._set_speed(speed))
+        if self.stby:
+            self.stby.value(1)
 
-    def stop(self):
-        """Stop the motor"""
+    def forward(self, speed: float) -> None:
+        """
+        Run motor forward at specified speed.
+
+        Args:
+            speed: Motor speed (0-1023)
+        """
+        self._set_direction(True, speed)
+
+    def reverse(self, speed: float) -> None:
+        """
+        Run motor in reverse at specified speed.
+
+        Args:
+            speed: Motor speed (0-1023)
+        """
+        self._set_direction(False, speed)
+
+    def stop(self) -> None:
+        """Stop the motor by setting both inputs and PWM low."""
         self.in1.value(0)
         self.in2.value(0)
         self.pwm.duty_u16(0)
-        self.stby.value(0) if self.stby else None
+        if self.stby:
+            self.stby.value(0)
 
-    def brake(self):
-        """
-        Actively brake the motor (different from stop)
-        by setting both inputs high
-        """
+    def brake(self) -> None:
+        """Actively brake the motor by setting both inputs high."""
         self.in1.value(1)
         self.in2.value(1)
         self.pwm.duty_u16(0)
-        self.stby.value(1) if self.stby else None
