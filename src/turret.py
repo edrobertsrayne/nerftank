@@ -67,8 +67,9 @@ class Turret:
 
     async def _execute_state_behaviour(self):
         if self._state == TurretState.STANDBY:
-            # firing motor is off
+            # firing motor is off and wait for arming
             self.fire_motor.duty_u16(0)
+            await self._armed.wait()
 
         elif self._state == TurretState.SPIN_UP:
             # spin up firing motor
