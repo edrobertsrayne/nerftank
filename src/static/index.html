@@ -242,8 +242,8 @@
         }
       });
 
-      var driveContoller = new JoyStick("drive");
-      var turretContoller = new JoyStick("turret");
+      var driveController = new JoyStick("drive");
+      var turretController = new JoyStick("turret");
 
       // every 50ms update the controller values, normalise them and send via websocket
       setInterval(function () {
@@ -251,14 +251,14 @@
           type: "stick_data",
           data: {
             drive: {
-              x: (driveContoller.GetX() * 2) / driveContoller.getWidth(),
-              y: (driveContoller.GetY() * 2) / driveContoller.getHeight(),
-              direction: driveContoller.GetDir(),
+              x: (driveController.GetX() * 2) / driveContoller.getWidth(),
+              y: (driveController.GetY() * 2) / driveContoller.getHeight(),
+              direction: driveController.GetDir(),
             },
             turret: {
-              x: (turretContoller.GetX() * 2) / turretContoller.getWidth(),
-              y: (turretContoller.GetY() * 2) / turretContoller.getHeight(),
-              direction: turretContoller.GetDir(),
+              x: (turretController.GetX() * 2) / turretContoller.getWidth(),
+              y: (turretController.GetY() * 2) / turretContoller.getHeight(),
+              direction: turretController.GetDir(),
             },
           },
         };
