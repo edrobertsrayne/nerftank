@@ -81,8 +81,8 @@ class RobotController:
         :param speed: Speed of the robot (-100 to 100)
         :param turn: Turn of the robot (-100 to 100)
         """
-        speed = utils.map(speed, -1, 1, -1023, 1023)
-        turn = utils.map(turn, -1, 1, -511, 511)
+        speed = utils.map_range(speed, -1, 1, -1023, 1023)
+        turn = utils.map_range(turn, -1, 1, -511, 511)
 
         left_speed = speed + turn
         right_speed = speed - turn
