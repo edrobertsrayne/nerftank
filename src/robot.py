@@ -67,6 +67,12 @@ class RobotController:
         pan = float(data["turret"]["x"])
         tilt = float(data["turret"]["y"])
 
+        # clip values to [-1, 1]
+        speed = utils.constrain(speed, -1, 1)
+        turn = utils.constrain(turn, -1, 1)
+        pan = utils.constrain(pan, -1, 1)
+        tilt = utils.constrain(tilt, -1, 1)
+
         # apply a ramp function with a small deadzone
         speed = self.ramp_cubic(speed, deadzone=0.1)
         turn = self.ramp_cubic(turn, deadzone=0.1)
