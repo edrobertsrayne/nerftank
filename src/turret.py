@@ -1,6 +1,5 @@
 from servo import Servo
 from machine import Pin, PWM
-from robot import RobotController
 from enum import Enum
 import utils
 import uasyncio as asyncio
