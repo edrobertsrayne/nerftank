@@ -245,19 +245,19 @@
       var driveContoller = new JoyStick("drive");
       var turretContoller = new JoyStick("turret");
 
-      // every 50ms update the controller values and send via websocket
+      // every 50ms update the controller values, normalise them and send via websocket
       setInterval(function () {
         const stickData = {
           type: "stick_data",
           data: {
             drive: {
-              x: driveContoller.GetX(),
-              y: driveContoller.GetY(),
+              x: (driveContoller.GetX() * 2) / driveContoller.getWidth(),
+              y: (driveContoller.GetY() * 2) / driveContoller.getHeight(),
               direction: driveContoller.GetDir(),
             },
             turret: {
-              x: turretContoller.GetX(),
-              y: turretContoller.GetY(),
+              x: (turretContoller.GetX() * 2) / turretContoller.getWidth(),
+              y: (turretContoller.GetY() * 2) / turretContoller.getHeight(),
               direction: turretContoller.GetDir(),
             },
           },

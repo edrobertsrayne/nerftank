@@ -132,20 +132,8 @@ class Turret:
                 await asyncio.sleep(1)
 
     def move(self, pan, tilt):
-        pan = utils.map(
-            pan,
-            -RobotController.MAX_JOYSTICK_VALUE,
-            RobotController.MAX_JOYSTICK_VALUE,
-            PAN_MIN,
-            PAN_MAX,
-        )
-        tilt = utils.map(
-            tilt,
-            -RobotController.MAX_JOYSTICK_VALUE,
-            RobotController.MAX_JOYSTICK_VALUE,
-            TILT_MIN,
-            TILT_MAX,
-        )
+        pan = utils.map(pan, -1, 1, PAN_MIN, PAN_MAX)
+        tilt = utils.map(tilt, -1, 1, TILT_MIN, TILT_MAX)
 
         pan = self.pan_servo.write_microseconds(pan)
         tilt = self.tilt_servo.write_microseconds(tilt)
