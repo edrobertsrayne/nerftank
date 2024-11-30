@@ -1,6 +1,5 @@
 from servo import Servo
 from machine import Pin, PWM
-from enum import Enum
 import utils
 import uasyncio as asyncio
 
@@ -11,15 +10,13 @@ TILT_MAX = 2000
 TRIGGER_MIN = 1400
 TRIGGER_MAX = 2500
 
-
-class TurretState(Enum):
-    STANDBY = "STANDBY"
-    SPIN_UP = "SPIN_UP"
-    READY = "READY"
-    FIRING = "FIRING"
-    COOLDOWN = "COOLDOWN"
-    EMPTY = "EMPTY"
-
+# Replace enum with string constants
+STATE_STANDBY = "STANDBY"
+STATE_SPIN_UP = "SPIN_UP"
+STATE_READY = "READY"
+STATE_FIRING = "FIRING"
+STATE_COOLDOWN = "COOLDOWN"
+STATE_EMPTY = "EMPTY"
 
 class Turret:
     def __init__(self, pan, tilt, trigger, fire):
@@ -32,7 +29,7 @@ class Turret:
         self.tilt_servo.write_microseconds((TILT_MIN + PAN_MAX) // 2)
         self.trigger_servo.write_microseconds(TRIGGER_MAX)
 
-        self._state = TurretState.STANDBY
+        self._state = STATE_STANDBY
         self._armed = asyncio.Event()
         self._firing = asyncio.Event()
         self._ammo = 5
@@ -40,57 +37,57 @@ class Turret:
 
     def _get_next_state(self):
         if self._ammo < 1:
-            self._state = TurretState.EMPTY
+            self._state = STATE_EMPTY
 
         elif not self._armed.is_set():
-            self._state = TurretState.STANDBY
+            self._state = STATE_STANDBY
 
-        elif self._state == TurretState.STANDBY:
-            self._state = TurretState.SPIN_UP
+        elif self._state == STATE_STANDBY:
+            self._state = STATE_SPIN_UP
 
-        elif self._state == TurretState.SPIN_UP:
-            self._state = TurretState.READY
+        elif self._state == STATE_SPIN_UP:
+            self._state = STATE_READY
 
-        elif self._state == TurretState.READY:
+        elif self._state == STATE_READY:
             if self._firing.is_set():
-                self._state = TurretState.FIRING
+                self._state = STATE_FIRING
 
-        elif self._state == TurretState.FIRING:
-            self._state = TurretState.COOLDOWN
+        elif self._state == STATE_FIRING:
+            self._state = STATE_COOLDOWN
 
-        elif self._state == TurretState.COOLDOWN:
-            self._state = TurretState.READY
+        elif self._state == STATE_COOLDOWN:
+            self._state = STATE_READY
 
         else:
             raise ValueError(f"Unknown state: {self._state}")
 
     async def _execute_state_behaviour(self):
-        if self._state == TurretState.STANDBY:
+        if self._state == STATE_STANDBY:
             # firing motor is off and wait for arming
             self.fire_motor.duty_u16(0)
             await self._armed.wait()
 
-        elif self._state == TurretState.SPIN_UP:
+        elif self._state == STATE_SPIN_UP:
             # spin up firing motor
             self.fire_motor.duty_u16(1 << 15)
 
-        elif self._state == TurretState.READY:
+        elif self._state == STATE_READY:
             # do nothing
             pass
 
-        elif self._state == TurretState.FIRING:
+        elif self._state == STATE_FIRING:
             # activate trigger, decrement ammo counter, and clear firing event
             self.trigger_servo.write_microseconds(TRIGGER_MIN)
             self._ammo -= 1
             self._firing.clear()
             await asyncio.sleep_ms(100)
 
-        elif self._state == TurretState.COOLDOWN:
+        elif self._state == STATE_COOLDOWN:
             # withdraw trigger and cooldown before next shot
             self.trigger_servo.write_microseconds(TRIGGER_MAX)
             await asyncio.sleep_ms(100)
 
-        elif self._state == TurretState.EMPTY:
+        elif self._state == STATE_EMPTY:
             # no ammuntion, do nothing
             self.fire_motor.duty_u16(0)
 
