@@ -251,13 +251,13 @@
           type: "stick_data",
           data: {
             drive: {
-              x: (driveController.GetX() * 2) / driveController.GetWidth(),
-              y: (driveController.GetY() * 2) / driveController.GetHeight(),
+              x: driveController.GetX() / 100,
+              y: driveController.GetY() / 100,
               direction: driveController.GetDir(),
             },
             turret: {
-              x: (turretController.GetX() * 2) / turretController.GetWidth(),
-              y: (turretController.GetY() * 2) / turretController.GetHeight(),
+              x: turretController.GetX() / 100,
+              y: turretController.GetY() / 100,
               direction: turretController.GetDir(),
             },
           },
