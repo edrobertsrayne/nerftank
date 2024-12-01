@@ -74,8 +74,8 @@ class RobotController:
         tilt = utils.constrain(tilt, -1, 1)
 
         # apply a ramp function with a small deadzone
-        speed = self.ramp_quadratic(speed, deadzone=0.1)
-        turn = self.ramp_quadratic(turn, deadzone=0.1)
+        speed = self._apply_deadzone(speed, 0.1)
+        turn = self._apply_deadzone(turn, 0.1)
 
         self.drive(speed, turn)
         self.turret.move(pan, tilt)
