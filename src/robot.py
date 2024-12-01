@@ -74,8 +74,8 @@ class RobotController:
         tilt = utils.constrain(tilt, -1, 1)
 
         # apply a ramp function with a small deadzone
-        speed = self.ramp_cubic(speed, deadzone=0.1)
-        turn = self.ramp_cubic(turn, deadzone=0.1)
+        speed = self.ramp_quadratic(speed, deadzone=0.1)
+        turn = self.ramp_quadratic(turn, deadzone=0.1)
 
         self.drive(speed, turn)
         self.turret.move(pan, tilt)
@@ -84,14 +84,14 @@ class RobotController:
         """
         Drive the robot.
 
-        :param speed: Speed of the robot (-100 to 100)
-        :param turn: Turn of the robot (-100 to 100)
+        :param speed: Speed of the robot (-1 to 1)
+        :param turn: Turn of the robot (-1 to 1)
         """
         speed = utils.map_range(speed, -1, 1, -1023, 1023)
         turn = utils.map_range(turn, -1, 1, -511, 511)
 
-        left_speed = speed + turn
-        right_speed = speed - turn
+        left_speed = utils.constrain(speed + turn, -1023, 1023)
+        right_speed = utils.constrain(speed - turn, -1023, 1023)
 
         for motor in self.left_motors:
             if left_speed > 0:
