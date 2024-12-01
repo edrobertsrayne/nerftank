@@ -18,6 +18,7 @@ STATE_FIRING = "FIRING"
 STATE_COOLDOWN = "COOLDOWN"
 STATE_EMPTY = "EMPTY"
 
+
 class Turret:
     def __init__(self, pan, tilt, trigger, fire):
         self.pan_servo = Servo(pan)
@@ -26,7 +27,7 @@ class Turret:
         self.fire_motor = PWM(Pin(fire))
 
         self.pan_servo.write_microseconds((PAN_MIN + PAN_MAX) // 2)
-        self.tilt_servo.write_microseconds((TILT_MIN + PAN_MAX) // 2)
+        self.tilt_servo.write_microseconds((TILT_MIN + TILT_MAX) // 2)
         self.trigger_servo.write_microseconds(TRIGGER_MAX)
 
         self._state = STATE_STANDBY
